@@ -6,9 +6,14 @@ const preCheck = async (): Promise<void> => {
     log('Уже открыта страница нужного события', 'steelblue');
     return;
   }
-  if (window.location.pathname !== '/bets/live') {
+  if (
+    window.location.pathname !== '/bets/live' &&
+    window.location.pathname !== '/bets/new/live'
+  ) {
     log('Открыт не Live', 'steelblue');
-    const liveLink = (await getElement('a[href="/bets/live"]')) as HTMLElement;
+    const liveLink = (await getElement(
+      'a[href="/bets/live"], a[href="/bets/new/live"]'
+    )) as HTMLElement;
     if (!liveLink) {
       throw new JsFailError('Не найдена кнопка перехода на Live');
     }
