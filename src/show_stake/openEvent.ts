@@ -10,7 +10,7 @@ const openEvent = async (): Promise<void> => {
   log(`Ищем событие "${worker.TeamOne} - ${worker.TeamTwo}"`, 'steelblue');
   log(`eventId = ${eventId}`, 'white', true);
   const eventLink = (await getElement(
-    `a.match-details[href*="${eventId}"]`
+    `a.match-info[href*="${eventId}"]`
   )) as HTMLElement;
 
   if (!eventLink) {

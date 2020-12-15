@@ -8,7 +8,7 @@ const clearCoupon = clearCouponGenerator({
   getStakeCount,
   // apiClear,
   clearSingleSelector: '',
-  clearAllSelector: '.buttons .remove-button',
+  clearAllSelector: '.button-clear',
   clearMode: 'all-only',
   // maxUnload: {
   //   getMaximumStake,
