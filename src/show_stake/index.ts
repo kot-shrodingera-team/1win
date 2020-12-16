@@ -8,6 +8,7 @@ import NewUrlError from './errors/newUrlError';
 import openBet from './openBet';
 import openEvent from './openEvent';
 import preCheck from './preCheck';
+import { maximumStakeReady } from '../stake_info/getMaximumStake';
 
 let couponOpenning = false;
 
@@ -50,6 +51,12 @@ const showStake = async (): Promise<void> => {
     await openEvent();
 
     await openBet();
+
+    const isMaximumStakeReady = await maximumStakeReady();
+    if (!isMaximumStakeReady) {
+      throw new JsFailError('Максимум не появился');
+    }
+    log('Максимум появился', 'steelblue');
 
     log('Ставка успешно открыта', 'green');
     setBetAcceptMode();
