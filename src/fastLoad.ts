@@ -4,6 +4,7 @@ import showStake from './show_stake';
 
 const fastLoad = async (): Promise<void> => {
   log(`Быстрая загрузка (${version})`, 'steelblue');
+  localStorage.setItem('newUrlError', '0');
   showStake();
 };
 

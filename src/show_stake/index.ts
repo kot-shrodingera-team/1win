@@ -1,4 +1,4 @@
-import { log, checkUrl } from '@kot-shrodingera-team/germes-utils';
+import { log } from '@kot-shrodingera-team/germes-utils';
 import clearCoupon from './clearCoupon';
 import { updateBalance } from '../stake_info/getBalance';
 import setBetAcceptMode from './setBetAcceptMode';
@@ -62,16 +62,27 @@ const showStake = async (): Promise<void> => {
     setBetAcceptMode();
     couponOpenning = false;
     localStorage.setItem('couponOpening', '0');
+    localStorage.setItem('newUrlError', '0');
     worker.JSStop();
   } catch (error) {
     if (error instanceof JsFailError) {
       log(error.message, 'red');
       couponOpenning = false;
       localStorage.setItem('couponOpening', '0');
+      localStorage.setItem('newUrlError', '0');
       worker.JSFail();
     }
     if (error instanceof NewUrlError) {
-      log(error.message, 'orange');
+      if (localStorage.getItem('newUrlError') === '1') {
+        log('Ошибка: Повторное открытие нового адреса', 'red');
+        couponOpenning = false;
+        localStorage.setItem('couponOpening', '0');
+        localStorage.setItem('newUrlError', '0');
+        worker.JSFail();
+      } else {
+        localStorage.setItem('newUrlError', '1');
+        log(error.message, 'orange');
+      }
     }
   }
 };
