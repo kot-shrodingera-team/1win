@@ -11,18 +11,28 @@ const openBet = async (): Promise<void> => {
   const [
     marketName,
     stakeName,
-    specialDescription,
+    parameter,
     // oddsTypeId,
   ] = worker.BetId.split('|');
 
-  await getElement('.odd-type-name');
+  log(`marketName = ${marketName}`, 'white', true);
+  log(`stakeName = ${stakeName}`, 'white', true);
+  log(`parameter = ${parameter}`, 'white', true);
+
   log(`Ищем маркет "${marketName}"`, 'steelblue');
+  await getElement('.odds-type-section');
 
   // const market = await getElement(`.odds-type-section [data-odds-type-id="${oddsTypeId}"]`);
+  // oddsTypeId это тип маркета, а не конкретный маркет, так по нему нельзя однозначно определить
 
-  const markets = [...document.querySelectorAll('.odd-type-name')];
-  const targetMarket = markets.find((market) => {
-    const marketText = market.textContent.trim();
+  const markets = [...document.querySelectorAll('.odds-type-section')];
+  const targetMarket = markets.find((market, index) => {
+    const marketNameElement = market.querySelector('.odd-type-name');
+    if (!marketNameElement) {
+      log(`Не найден заголовок маркета №${index}`, 'crimson');
+      return false;
+    }
+    const marketText = marketNameElement.textContent.trim();
     log(marketText, 'white', true);
     return marketText === marketName;
   }) as HTMLElement;
@@ -32,29 +42,25 @@ const openBet = async (): Promise<void> => {
   }
   log('Маркет найден', 'steelblue');
 
-  const oddsTypeSection = targetMarket.parentElement.parentElement;
-  if (!oddsTypeSection.classList.contains('active')) {
+  if (!targetMarket.classList.contains('active')) {
     log('Маркет не раскрыт. Раскрываем', 'orange');
     targetMarket.click();
   }
-  const oddsUl = await getElement('ul', 2000, oddsTypeSection);
-  if (!oddsUl) {
-    throw new JsFailError('Не найдена ставки маркета');
-  }
+  const oddsLine = targetMarket.querySelector('.odds-line');
 
   let targetOdd: HTMLElement;
-  const isOddDescription = oddsTypeSection.querySelector('.odd-description');
-  if (isOddDescription) {
-    log(`Ищем тотал ${specialDescription}`, 'steelblue');
-    const oddLines = [...oddsTypeSection.querySelectorAll('.odds-line-item')];
-    const targetOddLine = oddLines.find((oddLine) => {
+  if (oddsLine) {
+    // Если маркет тоталов
+    log(`Ищем тотал ${parameter}`, 'steelblue');
+    const oddLines = [...targetMarket.querySelectorAll('.odds-line-item')];
+    const targetOddLine = oddLines.find((oddLine, index) => {
       const oddDescription = oddLine.querySelector('.odd-description');
       if (oddDescription) {
         const oddDecriptionText = oddDescription.textContent.trim();
         log(`Параметр тотала: "${oddDecriptionText}"`, 'white', true);
-        return Number(oddDecriptionText) === Number(specialDescription);
+        return Number(oddDecriptionText) === Number(parameter);
       }
-      log('Не найден параметр тотала', 'white', true);
+      log(`Не найден параметр тотала №${index}`, 'crimson');
       return false;
     });
     log(`Ищем ставку "${stakeName}"`, 'steelblue');
@@ -65,8 +71,6 @@ const openBet = async (): Promise<void> => {
       return oddText === stakeName;
     }) as HTMLElement;
   } else {
-    let oddRegex: RegExp;
-    let logOddText: string;
     const teamOneElement = document.querySelector(
       '.match-info-team:nth-child(1)'
     );
@@ -83,33 +87,44 @@ const openBet = async (): Promise<void> => {
         'Не удалось определить название первой команды/игрока'
       );
     }
-    if (ri`${stakeName}`.test(teamOneElement.textContent.trim())) {
-      log('Ставка на первую команду/игрока', 'steelblue');
-      oddRegex = /1/;
-      logOddText = '1';
-    } else if (ri`${stakeName}`.test(teamTwoElement.textContent.trim())) {
-      log('Ставка на вторую команду/игрока', 'steelblue');
-      oddRegex = /2/;
-      logOddText = '2';
-    } else {
-      oddRegex = ri`${stakeName}`;
-      logOddText = stakeName;
-    }
-    if (specialDescription !== 'null') {
-      oddRegex = ri`^${oddRegex} \(([+-]?\d+(?:\.\d+)?)\)$`;
-      logOddText = `${logOddText} (${specialDescription})`;
-    } else {
-      oddRegex = ri`^${oddRegex}$`;
-    }
+    const teamOne = teamOneElement.textContent.trim();
+    const teamTwo = teamTwoElement.textContent.trim();
+
+    const [oddRegex, logOddText] = (() => {
+      if (parameter !== 'null') {
+        if (ri`${stakeName}`.test(teamOne)) {
+          log('Ставка на первую команду/игрока', 'steelblue');
+          return [ri`^(?:1 )?\(([+-]?\d+(?:\.\d+)?)\)$`, `[1 ](${parameter})`];
+        }
+        if (ri`${stakeName}`.test(teamTwo)) {
+          log('Ставка на вторую команду/игрока', 'steelblue');
+          return [ri`^(?:2 )?\(([+-]?\d+(?:\.\d+)?)\)$`, `[2 ](${parameter})`];
+        }
+        return [
+          ri`^${stakeName} \(([+-]?\d+(?:\.\d+)?)\)$`,
+          `${stakeName} (${parameter})`,
+        ];
+      }
+      if (ri`${stakeName}`.test(teamOne)) {
+        log('Ставка на первую команду/игрока', 'steelblue');
+        return [ri`^1$`, '1'];
+      }
+      if (ri`${stakeName}`.test(teamTwo)) {
+        log('Ставка на вторую команду/игрока', 'steelblue');
+        return [ri`^2$`, '2'];
+      }
+      return [ri`^${stakeName}$`, stakeName];
+    })();
+
     log(`Ищем ставку "${logOddText}"`, 'steelblue');
-    const odds = [...oddsTypeSection.querySelectorAll('.odd-name')];
+    const odds = [...targetMarket.querySelectorAll('.odd-name')];
     targetOdd = odds.find((odd) => {
       const oddText = odd.textContent.trim();
       log(oddText, 'white', true);
       const oddMatch = oddText.match(oddRegex);
       if (oddMatch) {
         if (oddMatch[1]) {
-          return Number(oddMatch[1]) === Number(specialDescription);
+          return Number(oddMatch[1]) === Number(parameter);
         }
         return true;
       }
