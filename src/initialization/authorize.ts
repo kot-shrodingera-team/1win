@@ -9,7 +9,7 @@ import { updateBalance, balanceReady } from '../stake_info/getBalance';
 const authorize = authorizeGenerator({
   openForm: {
     selector: 'button.login',
-    openedSelector: '[data-v-581105ff].modal-container',
+    openedSelector: '.modal-container',
     loopCount: 10,
     triesInterval: 1000,
     // afterOpenDelay: 1000,
