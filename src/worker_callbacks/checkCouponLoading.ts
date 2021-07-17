@@ -7,7 +7,7 @@ const check = () => {
     '.base-coupon-status.loading'
   );
   const couponStatusSuccess = document.querySelector(
-    '.base-coupon-status.success'
+    '.bet-accepted-notification'
   );
   const couponStatusError = document.querySelector('.base-coupon-status.error');
 
