@@ -8,7 +8,7 @@ const clearCoupon = clearCouponGenerator({
   getStakeCount,
   // apiClear,
   clearSingleSelector: '',
-  clearAllSelector: '.button-clear',
+  clearAllSelector: '.CouponCheckboxSection_clear_3kTqF',
   clearMode: 'all-only',
   // maxUnload: {
   //   getMaximumStake,
