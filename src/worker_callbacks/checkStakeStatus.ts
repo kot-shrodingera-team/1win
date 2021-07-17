@@ -2,7 +2,7 @@ import { log } from '@kot-shrodingera-team/germes-utils';
 
 const checkStakeStatus = (): boolean => {
   const couponStatusSuccess = document.querySelector(
-    '.base-coupon-status.success'
+    '.bet-accepted-notification'
   );
   const couponStatusError = document.querySelector('.base-coupon-status.error');
 
